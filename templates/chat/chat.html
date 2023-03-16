@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 current-chat">
+            <h4>Chat room #{{ room }}</h4>
+            <hr />
+
+            <div class="row current-chat-area">
+                <div class="col-md-12">
+                    <ul class="media-list" id="messages">
+                        {% for message in room_messages %}
+                            {% if not message.user %}
+                                <li class="media">
+                                    <div class="service-msg">
+                                        {{ message.text }}
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="media">
+                                    <div class="media-body">
+                                        <div class="media">
+                                            <div class="media-body">
+                                                <em>@{{ message.user }}</em> <small class="text-muted">| {{ message.created_at }}</small>
+                                                <br />
+                                                {{ message.text }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>  
+                </div>
+            </div>
+            <div class="row current-chat-footer">
+                <div class="panel-footer">
+                    <form class="input-group" id="send">
+                        <input type="text" class="form-control" name="text">
+                        <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit">Send</button>
+                        </span>
+                    </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    <script type="text/javascript">var WS_URL = "{{ app.router['ws'].url_for(name=room.name) }}";</script>
+    <script src="/static/chat.js"></script>
+{% endblock %}

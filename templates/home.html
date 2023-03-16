@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div>
+    <h1>Как пользоваться?</h1>
+
+    <ul class="lead">
+        <li><a href="{{ app.router['login'].url_for() }}">Войдите</a> или <a href="{{ app.router['register'].url_for() }}">зарегистрируйтесь</a>
+        <li>Присоединитесь в комнату или создайте <a href="{{ app.router['create_room'].url_for() }}">новую</a>
+    </ul>
+</div>
+
+{% endblock %}
