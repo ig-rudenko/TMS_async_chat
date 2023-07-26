@@ -61,6 +61,7 @@ class Register(web.View):
 
     async def post(self):
         username = await self.check_username()
+        # дадаваць тут
         print('username', username)
 
         if not username:
