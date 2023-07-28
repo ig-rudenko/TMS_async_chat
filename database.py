@@ -5,7 +5,6 @@ from sqlalchemy import update as sqlalchemy_update, select
 
 Base = declarative_base()
 
-
 class AsyncDatabaseConnection:
 
     def __init__(self):

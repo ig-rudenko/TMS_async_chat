@@ -28,12 +28,12 @@ class LogIn(web.View):
             print("Проверьте логин")
             redirect(self.request, "login")
             return
-        try:
-            password = await user.password
-            salt_from_password = password[:16]
-            new_password = hashlib.pbkdf2_hmac('sha256', password_user.encode('utf-8'), salt_from_password, 100000)
-            new_password == password
-        except Exception:
+
+        password = user.password
+        salt_from_password = password[:16]
+        new_password = hashlib.pbkdf2_hmac('sha256', password_user.encode('utf-8'), salt_from_password, 100000)
+
+        if new_password != password:
             print("Неправильный пароль")
             redirect(self.request, "login")
 
@@ -94,8 +94,8 @@ class Register(web.View):
 
         salt = os.urandom(16)
 
-        key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
-        password = salt + key
+        password = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+
 
         await User.create(username=username, password=password)
         user = await User.get(username=username, password=password)
