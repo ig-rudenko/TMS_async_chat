@@ -20,22 +20,22 @@ class LogIn(web.View):
     async def post(self):
         data = await self.request.post()
         username = data.get('username', '').lower()
-        # password_user = data.get('password')
+        password_user = data.get('password')
 
-        # try:
-        #     user = await User.get(username=username)
-        # except Exception:
-        #     print("Проверьте логин")
-        #     redirect(self.request, "login")
-        #     return
-        # try:
-        #     password = await user.password
-        #     salt_from_password = password[:16]
-        #     new_password = hashlib.pbkdf2_hmac('sha256', password_user.encode('utf-8'), salt_from_password, 100000)
-        #     new_password == password
-        # except Exception:
-        #     print("Неправильный пароль")
-        #     redirect(self.request, "login")
+        try:
+            user = await User.get(username=username)
+        except Exception:
+            print("Проверьте логин")
+            redirect(self.request, "login")
+            return
+        try:
+            password = await user.password
+            salt_from_password = password[:16]
+            new_password = hashlib.pbkdf2_hmac('sha256', password_user.encode('utf-8'), salt_from_password, 100000)
+            new_password == password
+        except Exception:
+            print("Неправильный пароль")
+            redirect(self.request, "login")
 
         else:
             self.login(user)
@@ -63,12 +63,12 @@ class Register(web.View):
             return ""
         return username
 
-    # async def check_password(self) -> str:
-    #     data = await self.request.post()
-    #     password = data.get('password')
-    #     if len(password) < 6:
-    #         return ""
-    #     return password
+    async def check_password(self) -> str:
+        data = await self.request.post()
+        password = data.get('password')
+        if len(password) < 6:
+            return ""
+        return password
 
     def login(self, user: User):
         self.request.session["user_id"] = user.id
@@ -79,9 +79,8 @@ class Register(web.View):
     async def post(self):
         username = await self.check_username()
         print('username', username)
-        # password = await self.check_password()
-        # print('password', password)
-
+        password = await self.check_password()
+        print('password', password)
 
         if not username and password:
             redirect(self.request, "register")
@@ -93,10 +92,10 @@ class Register(web.View):
         except:
             print("Пользователя нет!")
 
-        # salt = os.urandom(16)
-        #
-        # key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
-        # password = salt + key
+        salt = os.urandom(16)
+
+        key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+        password = salt + key
 
         await User.create(username=username, password=password)
         user = await User.get(username=username, password=password)
