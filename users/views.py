@@ -1,6 +1,7 @@
 import datetime
 import re
-
+import hashlib
+import os
 import aiohttp_jinja2
 from aiohttp import web
 from aiohttp.web_request import Request
@@ -19,13 +20,22 @@ class LogIn(web.View):
     async def post(self):
         data = await self.request.post()
         username = data.get('username', '').lower()
+        password_user = data.get('password')
 
         try:
             user = await User.get(username=username)
-        except Exception as error:
-            print(error)
+        except Exception:
+            print("Проверьте логин")
             redirect(self.request, "login")
             return
+
+        password = user.password
+        salt_from_password = password[:16]
+        new_password = hashlib.pbkdf2_hmac('sha256', password_user.encode('utf-8'), salt_from_password, 100000)
+
+        if new_password != password:
+            print("Неправильный пароль")
+            redirect(self.request, "login")
 
         else:
             self.login(user)
@@ -53,6 +63,13 @@ class Register(web.View):
             return ""
         return username
 
+    async def check_password(self) -> str:
+        data = await self.request.post()
+        password = data.get('password')
+        if len(password) < 6:
+            return ""
+        return password
+
     def login(self, user: User):
         self.request.session["user_id"] = user.id
         self.request.session["time"] = str(datetime.datetime.now())
@@ -62,8 +79,10 @@ class Register(web.View):
     async def post(self):
         username = await self.check_username()
         print('username', username)
+        password = await self.check_password()
+        print('password', password)
 
-        if not username:
+        if not username and password:
             redirect(self.request, "register")
 
         try:
@@ -73,8 +92,13 @@ class Register(web.View):
         except:
             print("Пользователя нет!")
 
-        await User.create(username=username)
-        user = await User.get(username=username)
+        salt = os.urandom(16)
+
+        password = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+
+
+        await User.create(username=username, password=password)
+        user = await User.get(username=username, password=password)
         self.login(user)
 
 
